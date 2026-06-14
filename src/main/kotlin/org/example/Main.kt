@@ -49,6 +49,7 @@ fun main() {
     println("- Постов с вложениями: ${wallService.getPostsWithAttachments().size}")
     println("- Всего постов: ${wallService.size()}")
 
+
     // Вывод всех постов
     println("\n📝 Все посты:")
     wallService.getAll().forEach { post ->
@@ -68,5 +69,51 @@ fun main() {
                 }
             }
         }
+    }
+
+    // Пример 5: Обновление поста (исправлено)
+    println("\n🔄 Обновление поста:")
+    val postToUpdate = wallService.getById(addedPost1.id)!!
+    println("До обновления: ${postToUpdate.text}")
+
+    val updatedPost = postToUpdate.copy(
+        text = "Обновлённый текст первого поста",
+        isPinned = true,
+        likes = Likes(count = 15, userLikes = true)
+    )
+    val updateSuccess = wallService.update(updatedPost)
+    println("Обновление прошло успешно: $updateSuccess")
+
+    val retrievedUpdatedPost = wallService.getById(addedPost1.id)
+    println("После обновления: ${retrievedUpdatedPost?.text}")
+    println("Закреплён: ${retrievedUpdatedPost?.isPinned}")
+    println("Количество лайков: ${retrievedUpdatedPost?.likes?.count}")
+
+
+    // Пример 6: Попытка обновить несуществующий пост
+    println("\n🛑 Попытка обновить несуществующий пост:")
+    val nonExistingUpdate = Post(id = 999, text = "Не существующий пост")
+    val updateFailed = wallService.update(nonExistingUpdate)
+    println("Обновление прошло успешно: $updateFailed")
+
+    // Пример 7: Проверка обновлённого списка постов
+    println("\n🔎 Проверка обновлённого списка постов:")
+    wallService.getAll().forEach { post ->
+        println("  #${post.id}: ${post.text} | Лайки: ${post.likes.count} | Закреплён: ${post.isPinned}")
+    }
+
+    // Пример 8: Получение последних постов
+    println("\n🕒 Последние 2 поста:")
+    wallService.getLatest(2).forEach { post ->
+        println("  #${post.id}: ${post.text}")
+    }
+
+    // Пример 9: Получение постов конкретного владельца
+    println("\n👨‍👦 Посты владельца с ID=123:")
+    val ownerPost = Post(text = "Пост от владельца 123", ownerId = 123)
+    wallService.add(ownerPost)
+
+    wallService.getByOwnerId(123).forEach { post ->
+        println("  #${post.id}: ${post.text} (владелец: ${post.ownerId})")
     }
 }

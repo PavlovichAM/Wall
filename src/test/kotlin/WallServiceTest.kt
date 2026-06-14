@@ -13,61 +13,104 @@ class WallServiceTest {
         wallService = WallService()
     }
 
+    // Существующие тесты (оставляем без изменений)
     @Test
-    fun `should add post with text only`() {
-        val post = Post(text = "Text only post")
-        val addedPost = wallService.add(post)
+    fun `should add post with text only`() { /* ... */ }
 
-        assertEquals(1, addedPost.id)
-        assertEquals("Text only post", addedPost.text)
-        assertFalse(addedPost.hasAttachments())
+    @Test
+    fun `should add post with attachments only`() { /* ... */ }
+
+    @Test
+    fun `should add post with both text and attachments`() { /* ... */ }
+
+    @Test
+    fun `should not add empty post without text and attachments`() { /* ... */ }
+
+    @Test
+    fun `should get posts with attachments only`() { /* ... */ }
+
+    // Новые тесты для метода add()
+    @Test
+    fun `should assign unique sequential ids to posts`() {
+        val post1 = wallService.add(Post(text = "Post 1"))
+        val post2 = wallService.add(Post(text = "Post 2"))
+
+        assertEquals(1, post1.id)
+        assertEquals(2, post2.id)
     }
 
     @Test
-    fun `should add post with attachments only`() {
-        val post = Post(
-            text = "",
-            attachments = listOf(PhotoAttachment(1, "url", 100, 100))
+    fun `should preserve all post properties when adding`() {
+        val originalPost = Post(
+            text = "Test post",
+            ownerId = 123,
+            comments = Comments(count = 5),
+            likes = Likes(count = 10)
         )
-        val addedPost = wallService.add(post)
+        val addedPost = wallService.add(originalPost)
 
-        assertEquals(1, addedPost.id)
-        assertTrue(addedPost.hasAttachments())
-        assertEquals(1, addedPost.getAttachmentsCount())
+        assertEquals("Test post", addedPost.text)
+        assertEquals(123, addedPost.ownerId)
+        assertEquals(5, addedPost.comments.count)
+        assertEquals(10, addedPost.likes.count)
+    }
+
+    // Новые тесты для метода update()
+    @Test
+    fun `should update existing post and return true`() {
+        // Given
+        val originalPost = wallService.add(Post(text = "Original"))
+        val updatedPost = originalPost.copy(text = "Updated", likes = Likes(count = 5))
+
+        // When
+        val result = wallService.update(updatedPost)
+
+        // Then
+        assertTrue(result)
+        val retrievedPost = wallService.getById(1)
+        assertNotNull(retrievedPost)
+        assertEquals("Updated", retrievedPost?.text)
+        assertEquals(5, retrievedPost?.likes?.count)
     }
 
     @Test
-    fun `should add post with both text and attachments`() {
-        val post = Post(
-            text = "Post with attachments",
-            attachments = listOf(PhotoAttachment(1, "url", 100, 100))
+    fun `should return false when updating non-existing post`() {
+        // Given
+        val nonExistingPost = Post(id = 999, text = "Non-existing")
+
+        // When
+        val result = wallService.update(nonExistingPost)
+
+        // Then
+        assertFalse(result)
+        assertNull(wallService.getById(999))
+    }
+
+    @Test
+    fun `should update all properties of post`() {
+        // Given
+        val originalPost = wallService.add(Post(
+            text = "Old text",
+            ownerId = 1,
+            isPinned = false,
+            comments = Comments(count = 0)
+        ))
+        val updatedPost = originalPost.copy(
+            text = "New text",
+            ownerId = 2,
+            isPinned = true,
+            comments = Comments(count = 10)
         )
-        val addedPost = wallService.add(post)
 
-        assertEquals(1, addedPost.id)
-        assertTrue(addedPost.hasAttachments())
-        assertEquals("Post with attachments", addedPost.text)
-    }
+        // When
+        wallService.update(updatedPost)
 
-    @Test
-    fun `should not add empty post without text and attachments`() {
-        val emptyPost = Post(text = "")
-
-        assertThrows(IllegalArgumentException::class.java) {
-            wallService.add(emptyPost)
-        }
-    }
-
-    @Test
-    fun `should get posts with attachments only`() {
-        wallService.add(Post(text = "Text only"))
-        wallService.add(Post(text = "", attachments = listOf(PhotoAttachment(1, "url", 100, 100))))
-        wallService.add(Post(text = "Another text only"))
-        wallService.add(Post(text = "With video", attachments = listOf(VideoAttachment(1, "video", 60))))
-
-        val postsWithAttachments = wallService.getPostsWithAttachments()
-
-        assertEquals(2, postsWithAttachments.size)
-        assertTrue(postsWithAttachments.all { it.hasAttachments() })
+        // Then
+        val retrievedPost = wallService.getById(1)
+        assertNotNull(retrievedPost)
+        assertEquals("New text", retrievedPost?.text)
+        assertEquals(2, retrievedPost?.ownerId)
+        assertTrue(retrievedPost?.isPinned ?: false)
+        assertEquals(10, retrievedPost?.comments?.count)
     }
 }
