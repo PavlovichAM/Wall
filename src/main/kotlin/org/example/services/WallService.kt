@@ -26,6 +26,7 @@ class WallService {
         }
     }
 
+    // Остальные методы остаются без изменений
     fun getById(id: Int): Post? = posts.find { it.id == id }
     fun getAll(): List<Post> = posts.toList()
     fun removeById(id: Int): Boolean {
