@@ -21,7 +21,7 @@ fun main() {
     )
     val addedPost2 = wallService.add(postWithAttachments)
     println("✅ Добавлен пост #${addedPost2.id}: ${addedPost2.text ?: "(без текста)"}")
-    println("   ���ожений: ${addedPost2.getAttachmentsCount()}")
+    println("   Вложений: ${addedPost2.getAttachmentsCount()}")
 
     // Пример 3: Пост с разными типами вложений
     val mixedAttachmentsPost = Post(
@@ -34,7 +34,7 @@ fun main() {
     )
     val addedPost3 = wallService.add(mixedAttachmentsPost)
     println("✅ Добавлен пост #${addedPost3.id}: ${addedPost3.text}")
-    println("   ���его вложений: ${addedPost3.getAttachmentsCount()}")
+    println("   Всего вложений: ${addedPost3.getAttachmentsCount()}")
 
     // Пример 4: Попытка создать пустой пост (вызовет ошибку)
     try {
@@ -61,10 +61,23 @@ fun main() {
 
         if (post.hasAttachments()) {
             post.attachments.forEachIndexed { index, attachment ->
-                when (attachment) {
-                    is PhotoAttachment -> println("      📷 Фото ${index + 1}: ${attachment.url}")
-                    is VideoAttachment -> println("      🎥 Видео ${index + 1}: ${attachment.title}")
-                    is DocumentAttachment -> println("      ���кумент ${index + 1}: ${attachment.title}.${attachment.ext}")
+                when (attachment.type) {
+                    is AttachmentType.PHOTO -> {
+                        val photo = (attachment as PhotoAttachment).photo
+                        println("      📷 Фото ${index + 1}: ${photo.url}")
+                    }
+                    is AttachmentType.VIDEO -> {
+                        val video = (attachment as VideoAttachment).video
+                        println("      🎥 Видео ${index + 1}: ${video.title}")
+                    }
+                    is AttachmentType.DOC -> {
+                        val doc = (attachment as DocumentAttachment).doc
+                        println("      ���кумент ${index + 1}: ${doc.title}.${doc.ext}")
+                    }
+                    else -> {
+                        // На случай, если добавятся новые типы — чтобы компилятор не ругался
+                        println("      ❓ Неизвестный тип вложения")
+                    }
                 }
             }
         }
@@ -79,8 +92,8 @@ fun main() {
         text = "Обновлённый текст первого поста",
         isPinned = true,
         likes = Likes(count = 15, userLikes = true),
-        signerId = 777,                  // пример установки nullable-поля
-        replyOwnerId = 123,              // пример nullable
+        signerId = 777,
+        replyOwnerId = 123,
         replyPostId = 456
     )
     val updateSuccess = wallService.update(updatedPost)
@@ -93,5 +106,3 @@ fun main() {
     println("Подпись: ${retrievedUpdatedPost?.signerId}")
     println("Ответ от владельца: ${retrievedUpdatedPost?.replyOwnerId}, ответ на пост: ${retrievedUpdatedPost?.replyPostId}")
 }
-
-// Пример 6: Попытка обновить несуществующий пост

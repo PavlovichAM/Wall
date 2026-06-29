@@ -26,47 +26,25 @@ data class Views(
     val count: Int = 0
 )
 
-interface Attachment
-
-data class PhotoAttachment(
-    val photoId: Int,
-    val url: String,
-    val width: Int,
-    val height: Int
-) : Attachment
-
-data class VideoAttachment(
-    val videoId: Int,
-    val title: String,
-    val duration: Int
-) : Attachment
-
-data class DocumentAttachment(
-    val docId: Int,
-    val title: String,
-    val ext: String,
-    val size: Long
-) : Attachment
-
 data class Post(
     val id: Int = 0,
     val ownerId: Int = 0,
     val fromId: Int = 0,
     val createdBy: Int = 0,
     val date: Long = System.currentTimeMillis() / 1000,
-    val text: String? = null,                 // nullable
-    val replyOwnerId: Int? = null,            // nullable
-    val replyPostId: Int? = null,             // nullable
+    val text: String? = null,
+    val replyOwnerId: Int? = null,
+    val replyPostId: Int? = null,
     val friendsOnly: Boolean = false,
     val postType: String = "post",
-    val signerId: Int? = null,                // nullable
+    val signerId: Int? = null,
     val canPin: Boolean = true,
     val canDelete: Boolean = true,
     val canEdit: Boolean = true,
     val isPinned: Boolean = false,
     val markedAsAds: Boolean = false,
     val isFavorite: Boolean = false,
-    val postponedId: Int? = null,             // nullable
+    val postponedId: Int? = null,
     val comments: Comments = Comments(),
     val likes: Likes = Likes(),
     val reposts: Reposts = Reposts(),
