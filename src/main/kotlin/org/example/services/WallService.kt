@@ -7,7 +7,8 @@ class WallService {
     private var nextId = 1
 
     fun add(post: Post): Post {
-        require(post.text.isNotBlank() || post.attachments.isNotEmpty()) {
+        // Проверка: должен быть текст ИЛИ вложения. text может быть null, поэтому используем ?: ""
+        require(post.text?.isNotBlank() == true || post.attachments.isNotEmpty()) {
             "Пост должен содержать текст или вложения"
         }
         val newPost = post.copy(id = nextId)
@@ -26,20 +27,26 @@ class WallService {
         }
     }
 
-    // Остальные методы остаются без изменений
     fun getById(id: Int): Post? = posts.find { it.id == id }
+
     fun getAll(): List<Post> = posts.toList()
+
     fun removeById(id: Int): Boolean {
         val removed = posts.removeIf { it.id == id }
         if (removed && posts.isEmpty()) nextId = 1
         return removed
     }
+
     fun clear() {
         posts.clear()
         nextId = 1
     }
+
     fun size(): Int = posts.size
+
     fun getLatest(count: Int): List<Post> = posts.takeLast(count)
+
     fun getByOwnerId(ownerId: Int): List<Post> = posts.filter { it.ownerId == ownerId }
+
     fun getPostsWithAttachments(): List<Post> = posts.filter { it.hasAttachments() }
 }

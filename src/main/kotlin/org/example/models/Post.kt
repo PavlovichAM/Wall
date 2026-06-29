@@ -54,19 +54,19 @@ data class Post(
     val fromId: Int = 0,
     val createdBy: Int = 0,
     val date: Long = System.currentTimeMillis() / 1000,
-    val text: String = "",
-    val replyOwnerId: Int = 0,
-    val replyPostId: Int = 0,
+    val text: String? = null,                 // nullable
+    val replyOwnerId: Int? = null,            // nullable
+    val replyPostId: Int? = null,             // nullable
     val friendsOnly: Boolean = false,
     val postType: String = "post",
-    val signerId: Int = 0,
+    val signerId: Int? = null,                // nullable
     val canPin: Boolean = true,
     val canDelete: Boolean = true,
     val canEdit: Boolean = true,
     val isPinned: Boolean = false,
     val markedAsAds: Boolean = false,
     val isFavorite: Boolean = false,
-    val postponedId: Int = 0,
+    val postponedId: Int? = null,             // nullable
     val comments: Comments = Comments(),
     val likes: Likes = Likes(),
     val reposts: Reposts = Reposts(),
@@ -74,9 +74,14 @@ data class Post(
     val attachments: List<Attachment> = emptyList()
 ) {
     fun isFromCommunity(): Boolean = ownerId < 0 && fromId == ownerId
+
     fun isRepost(): Boolean = postType == "copy"
+
     fun getFormattedDate(): String = Date(date * 1000).toString()
+
     fun canCurrentUserEdit(): Boolean = canEdit && ownerId > 0
+
     fun hasAttachments(): Boolean = attachments.isNotEmpty()
+
     fun getAttachmentsCount(): Int = attachments.size
 }

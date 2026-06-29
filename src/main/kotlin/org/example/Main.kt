@@ -11,17 +11,17 @@ fun main() {
     val addedPost1 = wallService.add(textOnlyPost)
     println("✅ Добавлен пост #${addedPost1.id}: ${addedPost1.text}")
 
-    // Пример 2: Пост с вложениями
+    // Пример 2: Пост с вложениями и null-текстом (допустимо, т.к. есть вложения)
     val postWithAttachments = Post(
-        text = "Посмотрите мои фотографии!",
+        text = null,
         attachments = listOf(
             PhotoAttachment(1, "https://example.com/photo1.jpg", 1920, 1080),
             PhotoAttachment(2, "https://example.com/photo2.jpg", 1024, 768)
         )
     )
     val addedPost2 = wallService.add(postWithAttachments)
-    println("✅ Добавлен пост #${addedPost2.id}: ${addedPost2.text}")
-    println("   📎 Вложений: ${addedPost2.getAttachmentsCount()}")
+    println("✅ Добавлен пост #${addedPost2.id}: ${addedPost2.text ?: "(без текста)"}")
+    println("   ���ожений: ${addedPost2.getAttachmentsCount()}")
 
     // Пример 3: Пост с разными типами вложений
     val mixedAttachmentsPost = Post(
@@ -34,7 +34,7 @@ fun main() {
     )
     val addedPost3 = wallService.add(mixedAttachmentsPost)
     println("✅ Добавлен пост #${addedPost3.id}: ${addedPost3.text}")
-    println("   📎 Всего вложений: ${addedPost3.getAttachmentsCount()}")
+    println("   ���его вложений: ${addedPost3.getAttachmentsCount()}")
 
     // Пример 4: Попытка создать пустой пост (вызовет ошибку)
     try {
@@ -45,10 +45,9 @@ fun main() {
     }
 
     // Демонстрация работы с вложениями
-    println("\n📊 Статистика по вложениям:")
+    println("\n���атистика по вложениям:")
     println("- Постов с вложениями: ${wallService.getPostsWithAttachments().size}")
     println("- Всего постов: ${wallService.size()}")
-
 
     // Вывод всех постов
     println("\n📝 Все посты:")
@@ -57,21 +56,21 @@ fun main() {
             " (${post.getAttachmentsCount()} влож.)"
         else
             " (без вложений)"
-        println("  ${post.id}. ${post.text.take(40)}...$attachmentsInfo")
+        val textDisplay = post.text?.take(40) ?: "(без текста)"
+        println("  ${post.id}. $textDisplay...$attachmentsInfo")
 
-        // Детальная информация о вложениях
         if (post.hasAttachments()) {
             post.attachments.forEachIndexed { index, attachment ->
                 when (attachment) {
                     is PhotoAttachment -> println("      📷 Фото ${index + 1}: ${attachment.url}")
                     is VideoAttachment -> println("      🎥 Видео ${index + 1}: ${attachment.title}")
-                    is DocumentAttachment -> println("      📄 Документ ${index + 1}: ${attachment.title}.${attachment.ext}")
+                    is DocumentAttachment -> println("      ���кумент ${index + 1}: ${attachment.title}.${attachment.ext}")
                 }
             }
         }
     }
 
-    // Пример 5: Обновление поста (исправлено)
+    // Пример 5: Обновление поста
     println("\n🔄 Обновление поста:")
     val postToUpdate = wallService.getById(addedPost1.id)!!
     println("До обновления: ${postToUpdate.text}")
@@ -79,7 +78,10 @@ fun main() {
     val updatedPost = postToUpdate.copy(
         text = "Обновлённый текст первого поста",
         isPinned = true,
-        likes = Likes(count = 15, userLikes = true)
+        likes = Likes(count = 15, userLikes = true),
+        signerId = 777,                  // пример установки nullable-поля
+        replyOwnerId = 123,              // пример nullable
+        replyPostId = 456
     )
     val updateSuccess = wallService.update(updatedPost)
     println("Обновление прошло успешно: $updateSuccess")
@@ -88,32 +90,8 @@ fun main() {
     println("После обновления: ${retrievedUpdatedPost?.text}")
     println("Закреплён: ${retrievedUpdatedPost?.isPinned}")
     println("Количество лайков: ${retrievedUpdatedPost?.likes?.count}")
-
-
-    // Пример 6: Попытка обновить несуществующий пост
-    println("\n🛑 Попытка обновить несуществующий пост:")
-    val nonExistingUpdate = Post(id = 999, text = "Не существующий пост")
-    val updateFailed = wallService.update(nonExistingUpdate)
-    println("Обновление прошло успешно: $updateFailed")
-
-    // Пример 7: Проверка обновлённого списка постов
-    println("\n🔎 Проверка обновлённого списка постов:")
-    wallService.getAll().forEach { post ->
-        println("  #${post.id}: ${post.text} | Лайки: ${post.likes.count} | Закреплён: ${post.isPinned}")
-    }
-
-    // Пример 8: Получение последних постов
-    println("\n🕒 Последние 2 поста:")
-    wallService.getLatest(2).forEach { post ->
-        println("  #${post.id}: ${post.text}")
-    }
-
-    // Пример 9: Получение постов конкретного владельца
-    println("\n👨‍👦 Посты владельца с ID=123:")
-    val ownerPost = Post(text = "Пост от владельца 123", ownerId = 123)
-    wallService.add(ownerPost)
-
-    wallService.getByOwnerId(123).forEach { post ->
-        println("  #${post.id}: ${post.text} (владелец: ${post.ownerId})")
-    }
+    println("Подпись: ${retrievedUpdatedPost?.signerId}")
+    println("Ответ от владельца: ${retrievedUpdatedPost?.replyOwnerId}, ответ на пост: ${retrievedUpdatedPost?.replyPostId}")
 }
+
+// Пример 6: Попытка обновить несуществующий пост
